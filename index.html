@@ -493,6 +493,11 @@
     document.getElementById("today-full").textContent = `${months[now.getMonth()]} ${now.getFullYear()}`;
   }
 
+  // 세션 쿠키 없으면 로그인 페이지로
+  if (!document.cookie.split(';').some(c => c.trim().startsWith('session='))) {
+    location.href = '/login';
+  }
+
   async function loadData() {
     try {
       const res = await fetch(API_URL);
