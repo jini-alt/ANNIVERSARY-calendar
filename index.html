@@ -316,7 +316,6 @@
           </div>
           <button class="nav-btn" id="btn-all-months" style="display:none;" onclick="toggleAllMonths()">전체보기</button>
           <button class="add-btn" onclick="openAddModal()">+ 추가</button>
-          <a class="btn-logout" href="/api/auth/logout">로그아웃</a>
         </div>
       </div>
       <div id="cal-view">
@@ -496,7 +495,7 @@
   // 세션 확인 전까지 페이지 숨김
   document.documentElement.style.visibility = 'hidden';
 
-  // 세션 확인 (HttpOnly 쿠키는 JS에서 못 읽으므로 API로 확인)
+  // 세션 확인
   fetch('/api/auth/check').then(r => {
     if (r.ok) {
       document.documentElement.style.visibility = 'visible';
