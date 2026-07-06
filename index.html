@@ -493,10 +493,10 @@
     document.getElementById("today-full").textContent = `${months[now.getMonth()]} ${now.getFullYear()}`;
   }
 
-  // 세션 쿠키 없으면 로그인 페이지로
-  if (!document.cookie.split(';').some(c => c.trim().startsWith('session='))) {
-    location.href = '/login';
-  }
+  // 세션 확인 (HttpOnly 쿠키는 JS에서 못 읽으므로 API로 확인)
+  fetch('/api/auth/check').then(r => {
+    if (!r.ok) location.href = '/login';
+  }).catch(() => location.href = '/login');
 
   async function loadData() {
     try {
