@@ -344,6 +344,7 @@
     </div>
     <div class="detail-chars" id="detail-chars"></div>
     <div class="detail-actions">
+      <button class="btn-notion" id="detail-add-btn" onclick="openAddFromDetail()">+ 이 날에 항목 추가</button>
       <a class="btn-notion" id="detail-notion-btn" href="#" target="_blank">+ 노션에 이벤트 추가</a>
       <a class="btn-laftel-link" id="detail-laftel-btn" href="#" target="_blank">라프텔에서 작품 보기 →</a>
     </div>
@@ -619,8 +620,26 @@
     list.forEach(b => container.appendChild(renderItem(b)));
   }
 
+  let detailMonth = null, detailDay = null;
+
+  function openAddFromDetail() {
+    closeDetail();
+    openAddModal();
+    // 날짜 자동 입력
+    if (detailMonth !== null) {
+      setTimeout(() => {
+        const mEl = document.getElementById('inp-month');
+        const dEl = document.getElementById('inp-day');
+        if (mEl) mEl.value = detailMonth;
+        if (dEl) dEl.value = detailDay;
+      }, 50);
+    }
+  }
+
   function openDetail(month, day) {
-    const items = getForDay(month, day); if (!items.length) return;
+    detailMonth = month; detailDay = day;
+    const items = getForDay(month, day);
+    if (!items.length) { openAddFromDetail(); return; }
     document.getElementById("detail-date").textContent = `${curYear}년 ${month}월 ${day}일`;
     document.getElementById("detail-title").textContent = items.length===1?`${items[0].name}`:`${items.length}개 항목`;
     const chars = document.getElementById("detail-chars"); chars.innerHTML="";
