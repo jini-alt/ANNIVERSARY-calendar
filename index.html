@@ -99,6 +99,16 @@
     .cat-item[data-cat="기타"].active { background: var(--cat-etc-bg); color: var(--cat-etc-text); border-color: var(--cat-etc-border); }
     .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
+    /* 사이드바 — D-Day 리스트 */
+    .sidebar-dday { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+    .sidebar-dday-list { display: flex; flex-direction: column; gap: 4px; max-height: 280px; overflow-y: auto; }
+    .dday-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background 0.15s; }
+    .dday-item:hover { background: #32322e; }
+    .dday-item-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: var(--laftel-light); color: var(--laftel-text); border: 1px solid var(--laftel-mid); min-width: 38px; text-align: center; flex-shrink: 0; }
+    .dday-item-badge.today { background: var(--laftel); color: #fff; border-color: var(--laftel); }
+    .dday-item-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dday-empty { font-size: 12px; color: var(--text-tertiary); padding: 7px 10px; }
+
     /* ── 오른쪽 캘린더 ── */
     .main { flex: 1; min-width: 0; }
 
@@ -294,6 +304,10 @@
           <button class="cat-item" data-cat="기타" onclick="setCat('기타')"><span class="cat-dot" style="background:#5F5E5A;"></span> 기타</button>
         </div>
       </div>
+      <div class="sidebar-dday">
+        <div class="sidebar-cat-title">이번 달 D-Day</div>
+        <div class="sidebar-dday-list" id="dday-list"></div>
+      </div>
     </div>
     <div class="main">
       <div class="controls">
@@ -477,6 +491,19 @@
     "기타":            { bg:"#F1EFE8", text:"#5F5E5A", border:"#B4B2A9", icon:"#888780" },
   };
 
+  // 캘린더/D-Day 리스트에 표시할 카테고리별 접미사 (예: "오키타 소고 생일", "나히아 기념일")
+  const CAT_SUFFIX = {
+    "캐릭터 생일":      "생일",
+    "방영 기념일":      "기념일",
+    "팬덤 기념일":      "기념일",
+    "업계/시즌 이벤트": "",
+    "기타":            "",
+  };
+  function displayName(b) {
+    const suffix = CAT_SUFFIX[b.category] || "";
+    return suffix ? `${b.name} ${suffix}` : b.name;
+  }
+
   let DATA = [];
   let curYear = new Date().getFullYear();
   let curMonth = new Date().getMonth() + 1;
@@ -572,7 +599,7 @@
           items.forEach(b => {
             const chip = document.createElement("div");
             chip.className = `chip ${b.category}`;
-            chip.innerHTML = `<span class="chip-name">${b.name}</span>${b.title?`<span class="chip-title">${b.title}</span>`:''}`;
+            chip.innerHTML = `<span class="chip-name">${displayName(b)}</span>${b.title?`<span class="chip-title">${b.title}</span>`:''}`;
             chip.addEventListener("click", (e) => { e.stopPropagation(); openDetail(month, day); });
             cell.appendChild(chip);
           });
@@ -715,12 +742,38 @@
 
   function setView(v) { viewMode=v; document.getElementById("btn-cal").classList.toggle("active",v==="cal"); document.getElementById("btn-list").classList.toggle("active",v==="list"); document.getElementById("cal-view").style.display=v==="cal"?"block":"none"; document.getElementById("list-view").style.display=v==="list"?"block":"none"; document.getElementById("btn-all-months").style.display=v==="list"?"inline-block":"none"; render(); }
   function toggleAllMonths() { showAllMonths=!showAllMonths; document.getElementById("btn-all-months").classList.toggle("active",showAllMonths); document.getElementById("btn-all-months").textContent=showAllMonths?"이번 달만":"전체보기"; renderList(); }
+  function renderDdayList() {
+    const container = document.getElementById("dday-list");
+    if (!container) return;
+    container.innerHTML = "";
+    const today = new Date();
+    const tm = today.getMonth() + 1, td = today.getDate();
+    const list = filteredData()
+      .filter(b => b.month === tm && b.day >= td)
+      .sort((a, b) => a.day - b.day);
+
+    if (!list.length) {
+      container.innerHTML = `<div class="dday-empty">이번 달 남은 이벤트가 없어요.</div>`;
+      return;
+    }
+    list.forEach(b => {
+      const dday = b.day - td;
+      const row = document.createElement("div");
+      row.className = "dday-item";
+      const badgeText = dday === 0 ? "D-DAY" : `D-${dday}`;
+      row.innerHTML = `<span class="dday-item-badge${dday===0?' today':''}">${badgeText}</span><span class="dday-item-name">${displayName(b)}</span>`;
+      row.addEventListener("click", () => openDetail(b.month, b.day));
+      container.appendChild(row);
+    });
+  }
+
   function render() {
     const today = new Date();
     const isToday = curYear === today.getFullYear() && curMonth === today.getMonth() + 1;
     const btnToday = document.getElementById('btn-today');
     if (btnToday) btnToday.style.opacity = isToday ? '0.35' : '1';
     viewMode==="cal"?renderCalendar():renderList();
+    renderDdayList();
   }
 
   setTodayInfo();
