@@ -209,6 +209,15 @@
     .btn-laftel-link { display: block; text-align: center; background: none; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px; font-size: 12px; text-decoration: none; cursor: pointer; font-family: inherit; }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1A1A2E; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 200; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
     .toast.show { opacity: 1; }
+
+    /* 배너 캘린더 호버 미리보기 */
+    .banner-preview { position: fixed; z-index: 300; width: 240px; max-width: calc(100vw - 24px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; box-shadow: 0 8px 28px rgba(0,0,0,0.4); pointer-events: none; display: none; }
+    .banner-preview-date { font-size: 11px; color: var(--laftel-mid); font-weight: 700; letter-spacing: 0.02em; margin-bottom: 6px; }
+    .banner-preview-list { display: flex; flex-direction: column; gap: 5px; max-height: 220px; overflow-y: auto; }
+    .banner-preview-item { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; color: var(--text-primary); line-height: 1.35; }
+    .banner-preview-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .banner-preview-empty { font-size: 12px; color: var(--text-tertiary); }
+    .banner-preview-loading { font-size: 12px; color: var(--text-tertiary); }
     .empty-state { text-align: center; padding: 40px 0; color: var(--text-tertiary); font-size: 14px; }
     .loading { text-align: center; padding: 40px 0; color: var(--text-tertiary); font-size: 13px; }
 
@@ -333,6 +342,7 @@
             <button class="view-btn" id="btn-list" onclick="setView('list')">리스트</button>
           </div>
           <button class="nav-btn" id="btn-all-months" style="display:none;" onclick="toggleAllMonths()">전체보기</button>
+          <a class="nav-btn" href="https://script.google.com/a/macros/laftel.net/s/AKfycbytR7Ar9ivM217WZ4YYI5rT9gA715re5HlJitFpIFt5v5gWrjoLJtP2XlTwMmnRcGTQWg/exec" target="_blank" rel="noopener" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;">배너 캘린더 ↗</a>
           <button class="add-btn" onclick="openAddModal()">+ 추가</button>
         </div>
       </div>
@@ -423,6 +433,10 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="banner-preview" id="banner-preview">
+  <div class="banner-preview-date" id="banner-preview-date"></div>
+  <div class="banner-preview-list" id="banner-preview-list"></div>
+</div>
 
 <script>
 
@@ -519,6 +533,72 @@
     return src ? `<img class="chip-badge-icon" src="${src}" alt="${b.category}" />` : "";
   }
 
+  // ── 배너(캐로절) 캘린더 연동: 날짜 호버 시 예정 배너 미리보기 ──
+  const BANNER_API_URL = "https://script.google.com/macros/s/AKfycbzuB6EdRiOl_ecpf5g7tNOX85yzERRvBKRljkF0QFf-I7l0_n46J7cvlOJ0fxwt5PWSwA/exec";
+  const BANNER_CAT_COLORS = { event:"#BA7517", live:"#D4537E", own:"#816BFF", store:"#378ADD", ad:"#5F5E5A", neutral:"#888780" };
+  let BANNER_DATA = [];
+  let bannerFetchKey = null;
+  let bannerFetchPromise = null;
+
+  async function loadBanners(year, month) {
+    const key = `${year}-${month}`;
+    if (bannerFetchKey === key) return; // 이미 이 달(±2개월 범위 포함) 데이터를 가지고 있음
+    try {
+      bannerFetchPromise = fetch(`${BANNER_API_URL}?action=getBanners&year=${year}&month=${month}`).then(r => r.json());
+      const data = await bannerFetchPromise;
+      BANNER_DATA = Array.isArray(data) ? data : [];
+      bannerFetchKey = key;
+    } catch (err) {
+      console.warn("배너 캘린더 데이터를 불러오지 못했어요.", err);
+    }
+  }
+
+  function getBannersForDate(dateStr) {
+    return BANNER_DATA.filter(b => {
+      const bs = (b.start_dt || "").slice(0, 10);
+      const be = (b.end_dt || "").slice(0, 10);
+      return bs && be && bs <= dateStr && dateStr <= be;
+    }).sort((a, b) => (a.start_dt || "").localeCompare(b.start_dt || ""));
+  }
+
+  function showBannerPreview(ev, year, month, day) {
+    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const popup = document.getElementById("banner-preview");
+    const dateEl = document.getElementById("banner-preview-date");
+    const listEl = document.getElementById("banner-preview-list");
+    dateEl.textContent = `${year}. ${month}. ${day} 배너 일정`;
+
+    if (bannerFetchKey === null) {
+      listEl.innerHTML = `<div class="banner-preview-loading">불러오는 중...</div>`;
+    } else {
+      const items = getBannersForDate(dateStr);
+      listEl.innerHTML = !items.length
+        ? `<div class="banner-preview-empty">예정된 배너가 없어요.</div>`
+        : items.map(b => {
+            const color = BANNER_CAT_COLORS[b.cat] || BANNER_CAT_COLORS.neutral;
+            return `<div class="banner-preview-item"><span class="banner-preview-dot" style="background:${color};"></span><span>${b.name}</span></div>`;
+          }).join("");
+    }
+    popup.style.display = "block";
+    positionBannerPreview(ev);
+  }
+
+  function positionBannerPreview(ev) {
+    const popup = document.getElementById("banner-preview");
+    const gap = 14;
+    const rect = popup.getBoundingClientRect();
+    let x = ev.clientX + gap;
+    let y = ev.clientY + gap;
+    if (x + rect.width > window.innerWidth) x = ev.clientX - rect.width - gap;
+    if (y + rect.height > window.innerHeight) y = ev.clientY - rect.height - gap;
+    popup.style.left = Math.max(4, x) + "px";
+    popup.style.top = Math.max(4, y) + "px";
+  }
+
+  function hideBannerPreview() {
+    document.getElementById("banner-preview").style.display = "none";
+  }
+
   let DATA = [];
   let curYear = new Date().getFullYear();
   let curMonth = new Date().getMonth() + 1;
@@ -599,9 +679,9 @@
     for (let i = 0; i < total; i++) {
       const cell = document.createElement("div");
       cell.className = "cell";
-      let day, month = curMonth, isOther = false;
-      if (i < firstDay) { day=prevDays-firstDay+1+i; month=curMonth===1?12:curMonth-1; isOther=true; cell.classList.add("other-month"); }
-      else if (i >= firstDay+daysInMonth) { day=i-firstDay-daysInMonth+1; month=curMonth===12?1:curMonth+1; isOther=true; cell.classList.add("other-month"); }
+      let day, month = curMonth, year = curYear, isOther = false;
+      if (i < firstDay) { day=prevDays-firstDay+1+i; month=curMonth===1?12:curMonth-1; year=curMonth===1?curYear-1:curYear; isOther=true; cell.classList.add("other-month"); }
+      else if (i >= firstDay+daysInMonth) { day=i-firstDay-daysInMonth+1; month=curMonth===12?1:curMonth+1; year=curMonth===12?curYear+1:curYear; isOther=true; cell.classList.add("other-month"); }
       else { day=i-firstDay+1; }
       if (isToday(curYear,curMonth,day) && !isOther) cell.classList.add("today");
       const dn = document.createElement("div");
@@ -622,6 +702,10 @@
         cell.addEventListener("click", (e) => { if (e.target===cell||e.target===dn) { if (!items.length) openAddModal(month,day); } });
         if (!items.length) cell.classList.add("clickable");
       }
+      // 배너 캘린더 호버 미리보기 (모든 셀에 적용 — 이전/다음 달 셀 포함)
+      cell.addEventListener("mouseenter", (e) => showBannerPreview(e, year, month, day));
+      cell.addEventListener("mousemove", (e) => positionBannerPreview(e));
+      cell.addEventListener("mouseleave", hideBannerPreview);
       grid.appendChild(cell);
     }
   }
@@ -789,6 +873,7 @@
     if (btnToday) btnToday.style.opacity = isToday ? '0.35' : '1';
     viewMode==="cal"?renderCalendar():renderList();
     renderDdayList();
+    loadBanners(curYear, curMonth);
   }
 
   setTodayInfo();
