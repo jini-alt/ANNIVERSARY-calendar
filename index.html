@@ -151,7 +151,9 @@
     .date-num { font-size: 12px; font-weight: 500; color: var(--text-secondary); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 3px; }
     .chip { display: block; font-size: 12px; padding: 3px 6px; border-radius: 5px; margin-bottom: 3px; overflow: hidden; cursor: pointer; line-height: 1.4; }
     .chip:hover { filter: brightness(0.95); }
-    .chip-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+    .chip-name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+    .chip-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+    .chip-badge-icon { height: 16px; width: auto; flex-shrink: 0; display: block; }
     .chip-title { display: inline-block; margin-top: 2px; font-size: 11px; padding: 2px 6px; border-radius: 20px; background: rgba(255,255,255,0.55); border: 0.5px solid rgba(0,0,0,0.08); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .chip.캐릭터\ 생일 { background: var(--cat-bday-bg); color: var(--cat-bday-text); border: 0.5px solid var(--cat-bday-border); }
     .chip.방영\ 기념일 { background: var(--cat-anni-bg); color: var(--cat-anni-text); border: 0.5px solid var(--cat-anni-border); }
@@ -504,6 +506,19 @@
     return suffix ? `${b.name} ${suffix}` : b.name;
   }
 
+  // 카테고리별 배지 이미지 (자산 SVG). 캘린더 칩에 이름 옆 아이콘으로 표시.
+  const CAT_BADGE = {
+    "캐릭터 생일":      "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OTMuNzUgMTgxLjI1Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZjlmNmU5OwogICAgICAgIGZvbnQtZmFtaWx5OiBQcmV0ZW5kYXJkVmFyaWFibGUsICdQcmV0ZW5kYXJkIFZhcmlhYmxlJzsKICAgICAgICBmb250LXNpemU6IDEzNy40MXB4OwogICAgICAgIGZvbnQtdmFyaWF0aW9uLXNldHRpbmdzOiAnd2dodCcgNDAwOwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICM0MWE1YTU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJf66CI7J207Ja0XzEtMiIgZGF0YS1uYW1lPSLroIjsnbTslrQgMSI+CiAgICA8ZWxsaXBzZSBjbGFzcz0iY2xzLTIiIGN4PSIyNDYuODgiIGN5PSI5MC42MiIgcng9IjI0Ni44OCIgcnk9IjkwLjYyIi8+CiAgICA8dGV4dCBjbGFzcz0iY2xzLTEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4NC42MiAxMjguMTMpIHNjYWxlKC41MiAxKSI+PHRzcGFuIHg9IjAiIHk9IjAiPuyDneydvDwvdHNwYW4+PC90ZXh0PgogICAgPGVsbGlwc2UgY2xhc3M9ImNscy0yIiBjeD0iMjQ2Ljg4IiBjeT0iOTAuNjIiIHJ4PSIyNDYuODgiIHJ5PSI5MC42MiIvPgogICAgPHRleHQgY2xhc3M9ImNscy0xIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODQuNjIgMTMyLjEzKSBzY2FsZSguNTIgMSkiPjx0c3BhbiB4PSIwIiB5PSIwIj7sg53snbw8L3RzcGFuPjwvdGV4dD4KICA8L2c+Cjwvc3ZnPg==",
+    "방영 기념일":      "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OTMuNzUgMTgxLjI1Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZjlmNmU5OwogICAgICAgIGZvbnQtZmFtaWx5OiBQcmV0ZW5kYXJkVmFyaWFibGUsICdQcmV0ZW5kYXJkIFZhcmlhYmxlJzsKICAgICAgICBmb250LXNpemU6IDEzNy40MXB4OwogICAgICAgIGZvbnQtdmFyaWF0aW9uLXNldHRpbmdzOiAnd2dodCcgNDAwOwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICM0MWE1YTU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJf66CI7J207Ja0XzEtMiIgZGF0YS1uYW1lPSLroIjsnbTslrQgMSI+CiAgICA8ZWxsaXBzZSBjbGFzcz0iY2xzLTIiIGN4PSIyNDYuODciIGN5PSI5MC42MyIgcng9IjI0Ni44NyIgcnk9IjkwLjYzIi8+CiAgICA8dGV4dCBjbGFzcz0iY2xzLTEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkxLjI0IDEzNC4xMykgc2NhbGUoLjUyIDEpIj48dHNwYW4geD0iMCIgeT0iMCI+67Cp7JiB6riw64WQ7J28PC90c3Bhbj48L3RleHQ+CiAgPC9nPgo8L3N2Zz4=",
+    "팬덤 기념일":      "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OTMuNzUgMTgxLjQ1Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZjlmNmU5OwogICAgICAgIGZvbnQtZmFtaWx5OiBQcmV0ZW5kYXJkVmFyaWFibGUsICdQcmV0ZW5kYXJkIFZhcmlhYmxlJzsKICAgICAgICBmb250LXNpemU6IDEzNy40MXB4OwogICAgICAgIGZvbnQtdmFyaWF0aW9uLXNldHRpbmdzOiAnd2dodCcgNDAwOwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICM0MWE1YTU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJf66CI7J207Ja0XzEtMiIgZGF0YS1uYW1lPSLroIjsnbTslrQgMSI+CiAgICA8ZWxsaXBzZSBjbGFzcz0iY2xzLTIiIGN4PSIyNDYuODciIGN5PSI5MC42MyIgcng9IjI0Ni44NyIgcnk9IjkwLjYzIi8+CiAgICA8dGV4dCBjbGFzcz0iY2xzLTEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkxLjI0IDEzOC43NCkgc2NhbGUoLjUyIDEpIj48dHNwYW4geD0iMCIgeT0iMCI+7Yys642k6riw64WQ7J28PC90c3Bhbj48L3RleHQ+CiAgPC9nPgo8L3N2Zz4=",
+    "업계/시즌 이벤트": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OTMuNzUgMTgxLjQ1Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZjlmNmU5OwogICAgICAgIGZvbnQtZmFtaWx5OiBQcmV0ZW5kYXJkVmFyaWFibGUsICdQcmV0ZW5kYXJkIFZhcmlhYmxlJzsKICAgICAgICBmb250LXNpemU6IDEzNy40MXB4OwogICAgICAgIGZvbnQtdmFyaWF0aW9uLXNldHRpbmdzOiAnd2dodCcgNDAwOwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICM0MWE1YTU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJf66CI7J207Ja0XzEtMiIgZGF0YS1uYW1lPSLroIjsnbTslrQgMSI+CiAgICA8ZWxsaXBzZSBjbGFzcz0iY2xzLTIiIGN4PSIyNDYuODciIGN5PSI5MC42MyIgcng9IjI0Ni44NyIgcnk9IjkwLjYzIi8+CiAgICA8dGV4dCBjbGFzcz0iY2xzLTEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE1My40OSAxMzguNzQpIHNjYWxlKC41MiAxKSI+PHRzcGFuIHg9IjAiIHk9IjAiPuydtOuypO2KuDwvdHNwYW4+PC90ZXh0PgogIDwvZz4KPC9zdmc+",
+    "기타":            null,
+  };
+  function categoryBadgeImg(b) {
+    const src = CAT_BADGE[b.category];
+    return src ? `<img class="chip-badge-icon" src="${src}" alt="${b.category}" />` : "";
+  }
+
   let DATA = [];
   let curYear = new Date().getFullYear();
   let curMonth = new Date().getMonth() + 1;
@@ -599,7 +614,7 @@
           items.forEach(b => {
             const chip = document.createElement("div");
             chip.className = `chip ${b.category}`;
-            chip.innerHTML = `<span class="chip-name">${displayName(b)}</span>${b.title?`<span class="chip-title">${b.title}</span>`:''}`;
+            chip.innerHTML = `<div class="chip-name-row"><span class="chip-name">${b.name}</span>${categoryBadgeImg(b)}</div>${b.title?`<span class="chip-title">${b.title}</span>`:''}`;
             chip.addEventListener("click", (e) => { e.stopPropagation(); openDetail(month, day); });
             cell.appendChild(chip);
           });
