@@ -675,7 +675,13 @@
   }
 
   function filteredData() { return activeCat === "전체" ? DATA : DATA.filter(d => d.category === activeCat); }
-  function getForDay(m, d) { return filteredData().filter(b => b.month === m && b.day === d && (!b.year || Number(b.year) === curYear)); }
+  const CAT_ORDER = ["라프텔", "업계/시즌 이벤트", "방영 기념일", "팬덤 기념일", "캐릭터 생일", "기타"];
+  function catRank(cat) { const i = CAT_ORDER.indexOf(cat); return i === -1 ? CAT_ORDER.length : i; }
+  function getForDay(m, d) {
+    return filteredData()
+      .filter(b => b.month === m && b.day === d && (!b.year || Number(b.year) === curYear))
+      .sort((a, b) => catRank(a.category) - catRank(b.category));
+  }
   function laftelUrl(id) { return `https://laftel.net/item/${id}`; }
   function getDays(y, m) { return new Date(y, m, 0).getDate(); }
   function isToday(y, m, d) { const t = new Date(); return t.getFullYear()===y && t.getMonth()+1===m && t.getDate()===d; }
