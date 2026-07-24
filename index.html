@@ -155,7 +155,7 @@
     .cell.other-month .date-num { color: var(--text-tertiary); }
     .cell.today .date-num { background: var(--laftel); color: #fff; border-radius: 50%; }
     .date-num { font-size: 12px; font-weight: 500; color: var(--text-secondary); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 3px; }
-    .chip { display: block; font-size: 12px; padding: 3px 6px; border-radius: 5px; margin-bottom: 3px; overflow: hidden; cursor: pointer; line-height: 1.4; }
+    .chip { display: block; font-size: 12px; padding: 3px 6px; border-radius: 5px; margin-bottom: 3px; overflow: hidden; cursor: pointer; line-height: 1.4; border: 0.5px solid transparent; }
     .chip:hover { filter: brightness(0.95); }
     .chip-name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
     .chip-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
@@ -163,11 +163,6 @@
     .chip-title { display: inline-block; margin-top: 2px; font-size: 11px; padding: 2px 6px; border-radius: 20px; background: rgba(255,255,255,0.55); border: 0.5px solid rgba(0,0,0,0.08); color: #3f3d38; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .chip-more { font-size: 11px; font-weight: 600; color: var(--text-tertiary); padding: 3px 6px; margin-top: 1px; border-radius: 5px; cursor: pointer; }
     .chip-more:hover { color: var(--laftel); background: rgba(129,107,255,0.12); }
-    .chip.캐릭터\ 생일 { background: var(--cat-bday-bg); color: var(--cat-bday-text); border: 0.5px solid var(--cat-bday-border); }
-    .chip.방영\ 기념일 { background: var(--cat-anni-bg); color: var(--cat-anni-text); border: 0.5px solid var(--cat-anni-border); }
-    .chip.기타 { background: var(--cat-etc-bg); color: var(--cat-etc-text); border: 0.5px solid var(--cat-etc-border); }
-    .chip.업계\/시즌\ 이벤트 { background: var(--cat-event-bg); color: var(--cat-event-text); border: 0.5px solid var(--cat-event-border); }
-    .chip.팬덤\ 기념일 { background: var(--cat-fandom-bg); color: var(--cat-fandom-text); border: 0.5px solid var(--cat-fandom-border); }
 
     /* 리스트 뷰 */
     .list-wrap { display: none; }
@@ -726,7 +721,11 @@
           cell.addEventListener("click", (e) => { if (e.target===cell||e.target===dn) openDetail(month,day); });
           items.forEach(b => {
             const chip = document.createElement("div");
-            chip.className = `chip ${b.category}`;
+            chip.className = "chip";
+            const col = CAT_COLORS[b.category] || CAT_COLORS["기타"];
+            chip.style.background = col.bg;
+            chip.style.color = col.text;
+            chip.style.borderColor = col.border;
             chip.innerHTML = `<div class="chip-name-row"><span class="chip-name">${b.name}</span>${categoryBadgeImg(b)}</div>${b.title?`<span class="chip-title">${b.title}</span>`:''}`;
             chip.addEventListener("click", (e) => { e.stopPropagation(); openDetail(month, day); });
             cell.appendChild(chip);
