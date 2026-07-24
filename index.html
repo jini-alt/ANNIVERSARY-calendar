@@ -330,6 +330,7 @@
           <button class="cat-item" data-cat="방영 기념일" onclick="setCat('방영 기념일')"><span class="cat-dot" style="background:#185FA5;"></span> 방영 기념일</button>
           <button class="cat-item" data-cat="팬덤 기념일" onclick="setCat('팬덤 기념일')"><span class="cat-dot" style="background:#993556;"></span> 팬덤 기념일</button>
           <button class="cat-item" data-cat="업계/시즌 이벤트" onclick="setCat('업계/시즌 이벤트')"><span class="cat-dot" style="background:#854F0B;"></span> 업계/시즌 이벤트</button>
+          <button class="cat-item" data-cat="라프텔" onclick="setCat('라프텔')"><span class="cat-dot" style="background:#0E7A5F;"></span> 라프텔</button>
           <button class="cat-item" data-cat="기타" onclick="setCat('기타')"><span class="cat-dot" style="background:#5F5E5A;"></span> 기타</button>
         </div>
       </div>
@@ -406,11 +407,12 @@
     </div>
     <div class="form-group">
       <label class="form-label">카테고리 *</label>
-      <select class="form-select" id="f-category">
+      <select class="form-select" id="f-category" onchange="onCategoryChange()">
         <option value="캐릭터 생일">캐릭터 생일</option>
         <option value="방영 기념일">방영 기념일</option>
         <option value="팬덤 기념일">팬덤 기념일</option>
         <option value="업계/시즌 이벤트">업계/시즌 이벤트</option>
+        <option value="라프텔">라프텔</option>
         <option value="기타">기타</option>
       </select>
     </div>
@@ -431,6 +433,10 @@
         <label class="form-label">일 *</label>
         <input class="form-input" id="f-day" type="number" min="1" max="31" placeholder="1~31" />
       </div>
+    </div>
+    <div class="form-group" id="f-year-group">
+      <label class="form-label">연도 (선택)</label>
+      <input class="form-input" id="f-year" type="number" placeholder="예: 2026 · 비워두면 매년 반복돼요" />
     </div>
     <div class="form-group">
       <label class="form-label">라프텔 ID</label>
@@ -522,6 +528,7 @@
     "방영 기념일":      { bg:"#E6F1FB", text:"#185FA5", border:"#B5D4F4", icon:"#378ADD" },
     "팬덤 기념일":      { bg:"#FBEAF0", text:"#993556", border:"#F4C0D1", icon:"#D4537E" },
     "업계/시즌 이벤트": { bg:"#FAEEDA", text:"#854F0B", border:"#FAC775", icon:"#BA7517" },
+    "라프텔":          { bg:"#E1F7EF", text:"#0E7A5F", border:"#9FE3CD", icon:"#12A87F" },
     "기타":            { bg:"#F1EFE8", text:"#5F5E5A", border:"#B4B2A9", icon:"#888780" },
   };
 
@@ -531,6 +538,7 @@
     "방영 기념일":      "기념일",
     "팬덤 기념일":      "기념일",
     "업계/시즌 이벤트": "",
+    "라프텔":          "",
     "기타":            "",
   };
   function displayName(b) {
@@ -544,6 +552,7 @@
     "방영 기념일":      "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NjMuNiAxODkuNTYiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNmOTgwYzI7CiAgICAgICAgc3Ryb2tlOiAjMDAwOwogICAgICAgIHN0cm9rZS1taXRlcmxpbWl0OiAxMDsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9Il/roIjsnbTslrRfMS0yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAxIj4KICAgIDxlbGxpcHNlIGNsYXNzPSJjbHMtMSIgY3g9IjIzMS44IiBjeT0iOTQuNzgiIHJ4PSIyMzEuMyIgcnk9Ijk0LjI4Ii8+CiAgICA8Zz4KICAgICAgPHBhdGggZD0iTTEyNy4wNCw2MS4xMnY5LjMxaDEzLjk2di05LjMxaDQuNjV2MjcuOTNoLTIzLjI3di0yNy45M2g0LjY2Wk0xNDEsODQuMzl2LTkuMzFoLTEzLjk2djkuMzFoMTMuOTZaTTE0MSwxMjEuNjJ2LTEzLjk2aDQuNjV2MTMuOTZoLTQuNjVaTTE0NS42NiwxMDMuMDFoMjMuMjd2NC42NWgtMjMuMjd2LTQuNjVaTTE2OC45MywxMjEuNjJ2NC42NWgtMjMuMjd2LTQuNjVoMjMuMjdaTTE3My41OCw3OS43M3YxOC42MmgtNC42NXYtMzcuMjRoNC42NXYxMy45Nmg5LjMxdjQuNjZoLTkuMzFaTTE2OC45MywxMDcuNjZoNC42NXYxMy45NmgtNC42NXYtMTMuOTZaIi8+CiAgICAgIDxwYXRoIGQ9Ik0xOTcuNDQsODQuMzl2LTEzLjk2aDQuNjZ2MTMuOTZoLTQuNjZaTTIwMi4wOSw2NS43N2g0LjY1djQuNjVoLTQuNjV2LTQuNjVaTTIwMi4wOSw4OS4wNHYtNC42NWg0LjY1djQuNjVoLTQuNjVaTTIwNi43NSw2MS4xMmg5LjMxdjQuNjVoLTkuMzF2LTQuNjVaTTIxNi4wNSw4OS4wNHY0LjY1aC05LjMxdi00LjY1aDkuMzFaTTIxNi4wNSw3MC40MnYtNC42NWg0LjY2djQuNjVoLTQuNjZaTTIxNi4wNSw4NC4zOWg0LjY2djQuNjVoLTQuNjZ2LTQuNjVaTTIyMC43MSw3MC40Mmg0LjY1djEzLjk2aC00LjY1di0xMy45NlpNMjIwLjcxLDEyMS42MnYtMTMuOTZoNC42NXYxMy45NmgtNC42NVpNMjI1LjM2LDEwMy4wMWgyMy4yN3Y0LjY1aC0yMy4yN3YtNC42NVpNMjQ4LjY0LDEyMS42MnY0LjY1aC0yMy4yN3YtNC42NWgyMy4yN1pNMjM0LjY3LDg5LjA0di00LjY1aDEzLjk2di05LjMxaC0xMy45NnYtNC42NWgxMy45NnYtOS4zMWg0LjY1djM3LjI0aC00LjY1di05LjMxaC0xMy45NlpNMjQ4LjY0LDEwNy42Nmg0LjY1djEzLjk2aC00LjY1di0xMy45NloiLz4KICAgICAgPHBhdGggZD0iTTI3My41MSwxMTMuMDR2Ny44NWgtNy44NXYtNy44NWg3Ljg1WiIvPgogICAgICA8cGF0aCBkPSJNMjkwLjgyLDExMy4wNHY3Ljg1aC03Ljg1di03Ljg1aDcuODVaIi8+CiAgICAgIDxwYXRoIGQ9Ik0zMDguMTIsMTEzLjA0djcuODVoLTcuODV2LTcuODVoNy44NVoiLz4KICAgICAgPHBhdGggZD0iTTM0MS4zNyw5Ni40MmMuMTYuNDMuNDkuNzksMSwxLjA4LjUxLjI5LDEuMDUuNDQsMS42NC40NGg4Yy44LDAsMS40My4yNSwxLjg4Ljc2LjQ1LjUxLjY3LDEuMDkuNjQsMS43Ni0uMDMuNjctLjM5LDEuMjctMS4wOCwxLjhsLTYuNzIsNS4wNGMtLjM3LjI3LS42OC42MS0uOTIsMS4wNC0uMjQuNDMtLjI4LjkxLS4xMiwxLjQ0bDIuNTYsOGMuMjcuNzUuMjEsMS40MS0uMTYsMi0uMzcuNTktLjg4Ljk2LTEuNTIsMS4xMnMtMS4yOC4wMy0xLjkyLS40bC02LjgtNC44OGMtLjkxLS41OS0xLjg0LS41OS0yLjgsMGwtNi45Niw0Ljg4Yy0uOTYuNjktMS44OC43MS0yLjc2LjA0LS44OC0uNjctMS4xNi0xLjU5LS44NC0yLjc2bDIuNTYtOGMuMzItMS4wMS0uMDMtMS44Ny0xLjA0LTIuNTZsLTYuNDgtNC45NmMtLjY0LS41My0uOTctMS4xMy0xLTEuOC0uMDMtLjY3LjE5LTEuMjUuNjQtMS43Ni40NS0uNTEsMS4wNS0uNzYsMS44LS43Nmg4LjA4Yy41OSwwLDEuMTEtLjE2LDEuNTYtLjQ4LjQ1LS4zMi43Ni0uNjkuOTItMS4xMmwyLjY0LThjLjI3LS43NS43Mi0xLjI0LDEuMzYtMS40OHMxLjI4LS4yNCwxLjkyLDAsMS4wOS43MywxLjM2LDEuNDhsMi41Niw4LjA4WiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+",
     "팬덤 기념일":      "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NjMuNiAxODkuNTYiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNkMGY5ODA7CiAgICAgICAgc3Ryb2tlOiAjMDAwOwogICAgICAgIHN0cm9rZS1taXRlcmxpbWl0OiAxMDsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9Il/roIjsnbTslrRfMS0yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAxIj4KICAgIDxlbGxpcHNlIGNsYXNzPSJjbHMtMSIgY3g9IjIzMS44IiBjeT0iOTQuNzgiIHJ4PSIyMzEuMyIgcnk9Ijk0LjI4Ii8+CiAgICA8Zz4KICAgICAgPHBhdGggZD0iTTEyNy43MSw5My43di00LjY1aDQuNjZ2LTIzLjI3aC00LjY2di00LjY1aDI3LjkzdjQuNjVoLTQuNjV2MjMuMjdoNC42NXY0LjY1aC0yNy45M1pNMTQ2LjMzLDg5LjA0di0yMy4yN2gtOS4zMXYyMy4yN2g5LjMxWk0xNTAuOTgsMTI2LjI4di0yMy4yN2g0LjY1djE4LjYyaDI3LjkzdjQuNjVoLTMyLjU4Wk0xNzQuMjYsNjEuMTJ2MTMuOTZoOS4zMXYtMTMuOTZoNC42NnYzNy4yNGgtNC42NnYtMTguNjJoLTkuMzF2MTguNjJoLTQuNjV2LTM3LjI0aDQuNjVaIi8+CiAgICAgIDxwYXRoIGQ9Ik0yMDIuNzYsODkuMDR2LTI3LjkzaDIzLjI3djQuNjVoLTE4LjYydjE4LjYyaDE4LjYydjQuNjVoLTIzLjI3Wk0yNTMuOTYsMTAzLjAxdjIzLjI3aC0zMi41OHYtMjMuMjdoMzIuNThaTTI0OS4zMSwxMjEuNjJ2LTEzLjk2aC0yMy4yN3YxMy45NmgyMy4yN1pNMjM1LjM1LDc5Ljczdi00LjY2aDEzLjk2di0xMy45Nmg0LjY1djM3LjI0aC00LjY1di0xOC42MmgtMTMuOTZaIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNzQuMTgsMTEzLjA0djcuODVoLTcuODV2LTcuODVoNy44NVoiLz4KICAgICAgPHBhdGggZD0iTTI5MS40OSwxMTMuMDR2Ny44NWgtNy44NXYtNy44NWg3Ljg1WiIvPgogICAgICA8cGF0aCBkPSJNMzA4LjgsMTEzLjA0djcuODVoLTcuODV2LTcuODVoNy44NVoiLz4KICAgICAgPHBhdGggZD0iTTM0Mi4wNCw5Ni40MmMuMTYuNDMuNDkuNzksMSwxLjA4LjUxLjI5LDEuMDUuNDQsMS42NC40NGg4Yy44LDAsMS40My4yNSwxLjg4Ljc2LjQ1LjUxLjY3LDEuMDkuNjQsMS43Ni0uMDMuNjctLjM5LDEuMjctMS4wOCwxLjhsLTYuNzIsNS4wNGMtLjM3LjI3LS42OC42MS0uOTIsMS4wNC0uMjQuNDMtLjI4LjkxLS4xMiwxLjQ0bDIuNTYsOGMuMjcuNzUuMjEsMS40MS0uMTYsMnMtLjg4Ljk2LTEuNTIsMS4xMi0xLjI4LjAzLTEuOTItLjRsLTYuOC00Ljg4Yy0uOTEtLjU5LTEuODQtLjU5LTIuOCwwbC02Ljk2LDQuODhjLS45Ni43LTEuODguNzEtMi43Ni4wNC0uODgtLjY3LTEuMTYtMS41OS0uODQtMi43NmwyLjU2LThjLjMyLTEuMDEtLjAzLTEuODctMS4wNC0yLjU2bC02LjQ4LTQuOTZjLS42NC0uNTMtLjk3LTEuMTMtMS0xLjgtLjAzLS42Ny4xOS0xLjI1LjY0LTEuNzYuNDUtLjUxLDEuMDUtLjc2LDEuOC0uNzZoOC4wOGMuNTksMCwxLjExLS4xNiwxLjU2LS40OC40NS0uMzIuNzYtLjY5LjkyLTEuMTJsMi42NC04Yy4yNy0uNzUuNzItMS4yNCwxLjM2LTEuNDhzMS4yOC0uMjQsMS45MiwwLDEuMDkuNzMsMS4zNiwxLjQ4bDIuNTYsOC4wOFoiLz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==",
     "업계/시즌 이벤트": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NjMuNiAxODkuNTYiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNmOWIxODA7CiAgICAgICAgc3Ryb2tlOiAjMDAwOwogICAgICAgIHN0cm9rZS1taXRlcmxpbWl0OiAxMDsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9Il/roIjsnbTslrRfMS0yIiBkYXRhLW5hbWU9IuugiOydtOyWtCAxIj4KICAgIDxlbGxpcHNlIGNsYXNzPSJjbHMtMSIgY3g9IjIzMS44IiBjeT0iOTQuNzgiIHJ4PSIyMzEuMyIgcnk9Ijk0LjI4Ii8+CiAgICA8Zz4KICAgICAgPHBhdGggZD0iTTk1LjI5LDkwLjQ3di0xMy45Nmg0LjY2djEzLjk2aC00LjY2Wk05OS45NCw3MS44Nmg0LjY1djQuNjVoLTQuNjV2LTQuNjVaTTk5Ljk0LDk1LjEzdi00LjY1aDQuNjV2NC42NWgtNC42NVpNMTA0LjYsNjcuMmg5LjMxdjQuNjVoLTkuMzF2LTQuNjVaTTExMy45MSw5NS4xM3Y0LjY1aC05LjMxdi00LjY1aDkuMzFaTTExMy45MSw3Ni41MXYtNC42NWg0LjY2djQuNjVoLTQuNjZaTTExMy45MSw5MC40N2g0LjY2djQuNjVoLTQuNjZ2LTQuNjVaTTExOC41Niw3Ni41MWg0LjY1djEzLjk2aC00LjY1di0xMy45NlpNMTUxLjE0LDY3LjJ2NDYuNTRoLTQuNjV2LTQ2LjU0aDQuNjVaIi8+CiAgICAgIDxwYXRoIGQ9Ik0xODguOTYsODUuODJ2OS4zMWgtMjMuMjd2LTI3LjkzaDQuNjZ2OS4zMWgxMy45NnYtOS4zMWg0LjY2djEzLjk2aDEzLjk2di0xMy45Nmg0LjY2djM3LjI0aC00LjY2di0xOC42MmgtMTMuOTZaTTE4NC4zMSw5MC40N3YtOS4zMWgtMTMuOTZ2OS4zMWgxMy45NlpNMTg0LjMxLDEzMi4zNnYtMjMuMjdoNC42NnYxOC42MmgyNy45M3Y0LjY1aC0zMi41OFpNMjIxLjU0LDY3LjJ2MzcuMjRoLTQuNjV2LTM3LjI0aDQuNjVaIi8+CiAgICAgIDxwYXRoIGQ9Ik0yMzYuMDksMTA5LjA5di00LjY1aDUxLjJ2NC42NWgtNTEuMlpNMjQwLjc0LDkwLjQ3di0yMy4yN2g0MS44OXY0LjY1aC0zNy4yNHY0LjY1aDM3LjI0djQuNjVoLTM3LjI0djQuNjZoMzcuMjR2NC42NWgtNDEuODlaIi8+CiAgICAgIDxwYXRoIGQ9Ik0zMDcuNTEsMTE5LjEzdjcuODVoLTcuODV2LTcuODVoNy44NVoiLz4KICAgICAgPHBhdGggZD0iTTMyNC44MSwxMTkuMTN2Ny44NWgtNy44NXYtNy44NWg3Ljg1WiIvPgogICAgICA8cGF0aCBkPSJNMzQyLjEyLDExOS4xM3Y3Ljg1aC03Ljg1di03Ljg1aDcuODVaIi8+CiAgICAgIDxwYXRoIGQ9Ik0zNzUuMzcsMTAyLjUxYy4xNi40My40OS43OSwxLDEuMDguNTEuMjksMS4wNS40NCwxLjY0LjQ0aDhjLjgsMCwxLjQzLjI1LDEuODguNzYuNDUuNTEuNjcsMS4wOS42NCwxLjc2LS4wMy42Ny0uMzksMS4yNy0xLjA4LDEuOGwtNi43Miw1LjA0Yy0uMzcuMjctLjY4LjYxLS45MiwxLjA0LS4yNC40My0uMjguOTEtLjEyLDEuNDRsMi41Niw4Yy4yNy43NS4yMSwxLjQxLS4xNiwyLS4zNy41OS0uODguOTYtMS41MiwxLjEycy0xLjI4LjAzLTEuOTItLjRsLTYuOC00Ljg4Yy0uOTEtLjU5LTEuODQtLjU5LTIuOCwwbC02Ljk2LDQuODhjLS45Ni42OS0xLjg4LjcxLTIuNzYuMDQtLjg4LS42Ny0xLjE2LTEuNTktLjg0LTIuNzZsMi41Ni04Yy4zMi0xLjAxLS4wMy0xLjg3LTEuMDQtMi41NmwtNi40OC00Ljk2Yy0uNjQtLjUzLS45Ny0xLjEzLTEtMS44LS4wMy0uNjcuMTktMS4yNS42NC0xLjc2LjQ1LS41MSwxLjA1LS43NiwxLjgtLjc2aDguMDhjLjU5LDAsMS4xMS0uMTYsMS41Ni0uNDguNDUtLjMyLjc2LS42OS45Mi0xLjEybDIuNjQtOGMuMjctLjc1LjcyLTEuMjQsMS4zNi0xLjQ4czEuMjgtLjI0LDEuOTIsMCwxLjA5LjczLDEuMzYsMS40OGwyLjU2LDguMDhaIi8+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=",
+    "라프텔":          null,
     "기타":            null,
   };
   function categoryBadgeImg(b) {
@@ -666,7 +675,7 @@
   }
 
   function filteredData() { return activeCat === "전체" ? DATA : DATA.filter(d => d.category === activeCat); }
-  function getForDay(m, d) { return filteredData().filter(b => b.month === m && b.day === d); }
+  function getForDay(m, d) { return filteredData().filter(b => b.month === m && b.day === d && (!b.year || Number(b.year) === curYear)); }
   function laftelUrl(id) { return `https://laftel.net/item/${id}`; }
   function getDays(y, m) { return new Date(y, m, 0).getDate(); }
   function isToday(y, m, d) { const t = new Date(); return t.getFullYear()===y && t.getMonth()+1===m && t.getDate()===d; }
@@ -737,7 +746,8 @@
 
     function renderItem(b) {
       const col = CAT_COLORS[b.category]||CAT_COLORS["기타"];
-      const dday = (b.month===tm&&b.day>=td)?b.day-td:null;
+      const ddayEligible = !b.year || Number(b.year)===today.getFullYear();
+      const dday = (ddayEligible&&b.month===tm&&b.day>=td)?b.day-td:null;
       const ddayHtml = dday!==null?`<span class="dday-badge">${dday===0?"오늘!":"D-"+dday}</span>`:"";
       const item = document.createElement("div"); item.className="list-item";
       item.innerHTML=`<div class="list-date-badge" style="background:${col.bg};"><div class="list-date-day" style="color:${col.text};">${b.day}</div><div class="list-date-month" style="color:${col.text};">${monthKo[b.month]}</div></div><div class="list-info"><div class="list-char-name">${b.name}${ddayHtml}</div><div class="list-title-sub">${b.title||""}</div></div><div class="list-actions"><button class="btn-sm btn-outline" onclick="openEdit(DATA.find(d=>d.rowIndex===${b.rowIndex}))">수정</button></div>`;
@@ -745,7 +755,7 @@
     }
 
     if (showAllMonths) {
-      const all = filteredData().slice().sort((a,b)=> a.month-b.month || a.day-b.day);
+      const all = filteredData().filter(b => !b.year || Number(b.year)===curYear).sort((a,b)=> a.month-b.month || a.day-b.day);
       if (!all.length) { container.innerHTML = `<div class="empty-state">등록된 항목이 없습니다.</div>`; return; }
       let curM = null;
       all.forEach(b => {
@@ -760,7 +770,7 @@
       return;
     }
 
-    const list = filteredData().filter(b=>b.month===curMonth).sort((a,b)=>a.day-b.day);
+    const list = filteredData().filter(b=>b.month===curMonth && (!b.year || Number(b.year)===curYear)).sort((a,b)=>a.day-b.day);
     const hdr = document.createElement("div"); hdr.className="list-section-header"; hdr.textContent=`${monthKo[curMonth]} · ${list.length}개`; container.appendChild(hdr);
     if (!list.length) { container.innerHTML+=`<div class="empty-state">이 달의 항목이 없습니다.</div>`; return; }
     list.forEach(b => container.appendChild(renderItem(b)));
@@ -803,11 +813,16 @@
   function closeDetail() { document.getElementById("detail-overlay").classList.remove("open"); }
   function closeDetailBg(e) { if (e.target===document.getElementById("detail-overlay")) closeDetail(); }
 
+  function onCategoryChange() {
+    const cat = document.getElementById("f-category").value;
+    const yearInput = document.getElementById("f-year");
+    if (cat === "라프텔" && !yearInput.value) yearInput.value = new Date().getFullYear();
+  }
   function openAddModal(month, day) {
     editingItem=null;
     document.getElementById("form-title").textContent="새 항목 추가";
     document.getElementById("form-delete-btn").style.display="none";
-    ["f-name","f-title","f-laftel-id","f-memo"].forEach(id=>document.getElementById(id).value="");
+    ["f-name","f-title","f-laftel-id","f-memo","f-year"].forEach(id=>document.getElementById(id).value="");
     document.getElementById("f-month").value=month||"";
     document.getElementById("f-day").value=day||"";
     document.getElementById("f-category").value="캐릭터 생일";
@@ -823,6 +838,7 @@
     document.getElementById("f-day").value=item.day;
     document.getElementById("f-laftel-id").value=item.laftel_id||"";
     document.getElementById("f-memo").value=item.memo||"";
+    document.getElementById("f-year").value=item.year||"";
     document.getElementById("f-category").value=item.category;
     document.getElementById("form-overlay").classList.add("open");
   }
@@ -830,7 +846,8 @@
   function closeFormBg(e) { if (e.target===document.getElementById("form-overlay")) closeForm(); }
 
   async function saveItem() {
-    const body = { name:document.getElementById("f-name").value.trim(), title:document.getElementById("f-title").value.trim(), month:parseInt(document.getElementById("f-month").value), day:parseInt(document.getElementById("f-day").value), laftel_id:document.getElementById("f-laftel-id").value.trim(), category:document.getElementById("f-category").value, memo:document.getElementById("f-memo").value.trim() };
+    const yearRaw = document.getElementById("f-year").value.trim();
+    const body = { name:document.getElementById("f-name").value.trim(), title:document.getElementById("f-title").value.trim(), month:parseInt(document.getElementById("f-month").value), day:parseInt(document.getElementById("f-day").value), laftel_id:document.getElementById("f-laftel-id").value.trim(), category:document.getElementById("f-category").value, memo:document.getElementById("f-memo").value.trim(), year: yearRaw ? parseInt(yearRaw) : "" };
     if (!body.name||!body.month||!body.day) { showToast("이름, 월, 일은 필수예요!"); return; }
     try {
       if (editingItem) { await fetch(API_URL,{method:"POST",body:JSON.stringify({_method:"PUT",...body,rowIndex:editingItem.rowIndex})}); const idx=DATA.findIndex(d=>d.rowIndex===editingItem.rowIndex); if(idx!==-1)DATA[idx]={...editingItem,...body}; showToast("수정됐어요!"); }
@@ -866,7 +883,7 @@
     const today = new Date();
     const tm = today.getMonth() + 1, td = today.getDate();
     const list = filteredData()
-      .filter(b => b.month === tm && b.day >= td)
+      .filter(b => b.month === tm && b.day >= td && (!b.year || Number(b.year) === today.getFullYear()))
       .sort((a, b) => a.day - b.day);
 
     if (!list.length) {
